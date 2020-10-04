@@ -6,7 +6,8 @@
     "author": "Joshua Kelley",
     "content_scripts": [{
         "matches": ["https://timetable.bournemouth.ac.uk/*"],
-        "js": ["content.js"]
+        "run_at": "document_start",
+        "js": ["content.js", "injector.js"]
     }],
     "background": {
         "scripts": [
@@ -18,6 +19,8 @@
     "web_accessible_resources": ["injector.js"],
     "permissions": [
         "webRequest",
+        "activeTab",
+        "storage",
         "https://*/*",
         "http://*/*",
         "tabs"
