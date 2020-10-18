@@ -24,14 +24,11 @@ function parseJSON(arrayOfAllEvents) {
     
     var uid = uniqueStr();
     
-    var dtstamp = new Date(Date.now());
-    dtstamp = dateTo8601(dtstamp);
+    var dtstamp = dateTo8601(new Date(Date.now()));
     
-    var dtstart = workingSingle.StartTime;
-    dtstart = dateTo8601(dtstart)
+    var dtstart = dateTo8601(workingSingle.StartTime);
     
-    var dtend = workingSingle.EndTime;
-    dtend = dateTo8601(dtend)
+    var dtend = dateTo8601(workingSingle.EndTime);
     
     var summary = workingSingle.ModuleName;
     summary = titleTrim(summary);
@@ -46,14 +43,35 @@ function parseJSON(arrayOfAllEvents) {
         location = titleCase(location);
     }
     
-    
-    
-    var description = null;
-    
+    var description = workingSingle.Lecturers;
+    var lecturerList = [];
+    for (var i = 0; i < Object.keys(description).length; i++) {
+        var key = Object.keys(description)[i]
+        lecturerList.push(nameFormat(description[key]));
+    }
+    if (lecturerList.length == 1) {
+        description = "Lecturer:";
+        description += "\\" + "n" + lecturerList[0];
+    } else {
+        description = "Lecturers:";
+        for (var i = 0; i < lecturerList.length; i++) {
+            description += "\\" + "n" + lecturerList[i];
+        }
+    }
     
     var returnBeans = buildIcs(uid, dtstamp, dtstart, dtend, summary, location, description);
 
     console.log(returnBeans);
+}
+
+function nameFormat(name) {
+    name = name.toLowerCase();
+    name = name.split(" ");
+    name.unshift(name[name.length - 1]);
+    name.pop();
+    name = name.join(" ");
+    name = titleCase(name);
+    return name;
 }
 
 
