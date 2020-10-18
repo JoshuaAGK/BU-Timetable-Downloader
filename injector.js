@@ -28,7 +28,9 @@ function parseJSON(arrayOfAllEvents) {
     var dtstart = workingSingle.StartTime;
     dtstart = dateTo8601(dtstart)
     
-    var dtend = null;
+    var dtend = workingSingle.EndTime;
+    dtend = dateTo8601(dtend)
+    
     var summary = null;
     var location = null;
     var description = null;
