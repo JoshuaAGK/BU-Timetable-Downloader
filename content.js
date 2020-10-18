@@ -2,32 +2,32 @@
 var isStudent = true;
 
 // Listen for inputs from popup.js
-chrome.runtime.onMessage.addListener (
-    function(request) {
-        if (request.msg == "download") {
-            main();
-        }
-    }
-);
+//chrome.runtime.onMessage.addListener (
+//    function(request) {
+//        if (request.msg == "download") {
+//            main();
+//        }
+//    }
+//);
 
 // Listen for keypress
-document.addEventListener('keydown', logKey);
+//document.addEventListener('keydown', logKey);
 
 // Run code on keypress
-function logKey(e) {
-    // Check if "S" key pressed (S = 83 in ASCII)
-    if (e.keyCode == 83) {
-        main();
-    }
-}
+//function logKey(e) {
+//    // Check if "S" key pressed (S = 83 in ASCII)
+//    if (e.keyCode == 83) {
+//        main();
+//    }
+//}
 
 // Get this party started!
-function main() {
-    var x = document.querySelectorAll(".modal-content");
-    var workingString = x[2].innerHTML;
-//    scrapeData(workingString);
-    interceptRequests();
-}
+//function main() {
+//    var x = document.querySelectorAll(".modal-content");
+//    var workingString = x[2].innerHTML;
+////    scrapeData(workingString);
+////    interceptRequests();
+//}
 
 var s = document.createElement('script');
 s.src = chrome.extension.getURL('injector.js');
@@ -44,7 +44,7 @@ s.onload = function() {
 //	});
 //});
 
-function interceptRequests() {
+//function interceptRequests() {
 
     
 //    chrome.webRequest.onHeadersReceived.addListener(function (object details) {
@@ -66,7 +66,7 @@ function interceptRequests() {
 //});
 //});
     
-}
+//}
 
 
 // Temporarily commenting this out
