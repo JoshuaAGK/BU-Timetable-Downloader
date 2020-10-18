@@ -37,14 +37,23 @@ function parseJSON(arrayOfAllEvents) {
     summary = titleTrim(summary);
     summary = titleCase(summary);
     
-    var location = null;
+    var location = "";
+    if (workingSingle.EventType == "Online") {
+        location = "Online";
+    } else {
+        location = workingSingle.RoomsAsString;
+        location = titleTrim(location);
+        location = titleCase(location);
+    }
+    
+    
+    
     var description = null;
     
     
     var returnBeans = buildIcs(uid, dtstamp, dtstart, dtend, summary, location, description);
 
-    
-    console.log(returnBeans)
+    console.log(returnBeans);
 }
 
 
@@ -66,6 +75,15 @@ function titleTrim(title) {
             if (title[i] == title[0]) {
                 title = title.pop();
             }
+        }
+    }
+    
+    
+    var lectureTheatres = ["allsebrook", "barnes", "cobham", "lawrence", "lees", "shelley", "stevenson", "create", "inspire", "share", "marconi", "wollstone"];
+    
+    if (title.split(' ').length == 1) {
+        if (lectureTheatres.includes(title)) {
+            title += " lecture theatre";
         }
     }
     
