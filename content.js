@@ -34,7 +34,18 @@ s.src = chrome.extension.getURL('injector.js');
 s.onload = function() {
     this.remove();
 };
+
+var imageElement = document.createElement("img");
+imageElement.src = chrome.extension.getURL('images/BC128White.png');
+imageElement.setAttribute("id", "buTimetableDownloaderLogoMax");
+imageElement.setAttribute("style", "display: none;");
+
+
+//img.onload = function() {
+//    this.remove();
+//};
 (document.head || document.documentElement).appendChild(s);
+(document.head || document.documentElement).appendChild(imageElement);
 
 
 //chrome.browserAction.onClicked.addListener(function (tab) {

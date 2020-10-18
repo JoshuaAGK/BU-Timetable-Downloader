@@ -18,7 +18,60 @@ xhr.send = function(postData) {
     return send.apply(this, arguments);
 };
 
-function parseJSON(arrayOfAllEvents) {    
+function addDownloadBtnToDOM() {
+    var toolbar = document.getElementsByClassName("toolbar")[0];
+    console.log(toolbar);
+    var downloadContainer = document.createElement("div");
+    downloadContainer.setAttribute("class", "dropdown")
+    downloadContainer.setAttribute("id", "timetableDownload")
+    
+    var tooltip = document.createElement("div");
+    tooltip.setAttribute("class", "tooltip fade left in");
+    tooltip.setAttribute("id", "downloadtooltip");
+    tooltip.setAttribute("role", "tooltip");
+    tooltip.setAttribute("style", "top: 4px; left: -84px; display: none;")
+    var tooltipArrow = document.createElement("div");
+    tooltipArrow.setAttribute("class", "tooltip-arrow");
+    var tooltipInner = document.createElement("div");
+    tooltipInner.setAttribute("class", "tooltip-inner");
+    tooltipInner.innerHTML = "Download";
+    
+    tooltip.appendChild(tooltipArrow);
+    tooltip.appendChild(tooltipInner);
+    downloadContainer.appendChild(tooltip)
+    
+    var downloadBtn = document.createElement("a");
+    downloadBtn.setAttribute("href", "#");
+    downloadBtn.setAttribute("role", "button");
+    downloadBtn.setAttribute("style", "height: 30px; width: 30px; background-color: #4e546f; cursor: pointer; margin-top: 10px; margin-bottom: 10px; display: block;");
+    downloadBtn.setAttribute("onmouseover", "mouseOver()");
+    downloadBtn.setAttribute("onmouseout", "mouseOut()");
+    downloadBtn.setAttribute("onclick", "downloadTimetableFunc()");
+    
+    var downloadIcon = document.createElement("img");
+    downloadIcon.src = document.getElementById("buTimetableDownloaderLogoMax").src;
+    downloadIcon.setAttribute("style", "padding: 5px;");
+    
+    downloadBtn.appendChild(downloadIcon);
+    downloadContainer.appendChild(downloadBtn);
+    toolbar.appendChild(downloadContainer);
+}
+
+function mouseOver() {
+    document.getElementById("downloadtooltip").style.display = "block";
+}
+function mouseOut() {
+    document.getElementById("downloadtooltip").style.display = "none";
+}
+
+
+function downloadTimetableFunc() {
+    console.log("Beans");
+}
+
+function parseJSON(arrayOfAllEvents) {   
+    addDownloadBtnToDOM();
+    
     // Temporary
     var workingSingle = arrayOfAllEvents[5]
     
@@ -59,7 +112,7 @@ function parseJSON(arrayOfAllEvents) {
         }
     }
     
-    var returnBeans = buildIcs(uid, dtstamp, dtstart, dtend, summary, location, description);
+    var returnBeans = buildEvent(uid, dtstamp, dtstart, dtend, summary, location, description);
 
     console.log(returnBeans);
 }
@@ -129,7 +182,14 @@ function buildIcs(uid, dtstamp, dtstart, dtend, summary, location, description) 
     var returnString = `BEGIN:VCALENDAR
 VERSION:2.0
 PRODID:-//Joshua Kelley//Bournemouth University Timetable Downloader//EN
-BEGIN:VEVENT
+
+
+END:VCALENDAR`
+    return returnString;
+}
+
+function buildEvent(uid, dtstamp, dtstart, dtend, summary, location, description) {
+    var returnString = `BEGIN:VEVENT
 UID:` + uid + `
 DTSTAMP:` + dtstamp + `
 DTSTART;TZID=Europe/London:` + dtstart + `
@@ -137,8 +197,7 @@ DTEND;TZID=Europe/London:` + dtend + `
 SUMMARY:` + summary + `
 LOCATION:` + location + `
 DESCRIPTION:` + description + `
-END:VEVENT
-END:VCALENDAR`
+END:VEVENT`
     return returnString;
 }
 

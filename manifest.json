@@ -16,7 +16,7 @@
         "persistent": true
     },
     
-    "web_accessible_resources": ["injector.js"],
+    "web_accessible_resources": ["injector.js", "images/BC128White.png"],
     "permissions": [
         "webRequest",
         "activeTab",
