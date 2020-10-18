@@ -23,13 +23,11 @@ function parseJSON(arrayOfAllEvents) {
     var uid = uniqueStr();
     
     var dtstamp = new Date(Date.now());
-    dtstamp = dtstamp.toISOString();
-    dtstamp = dtstamp.replace(/-/g, "");
-    dtstamp = dtstamp.replace(/:/g, "");
-    dtstamp = dtstamp.replace(/Z/g, "");
-    dtstamp = dtstamp.substring(0, dtstamp.indexOf("."));
+    dtstamp = dateTo8601(dtstamp);
     
-    var dtstart = null;
+    var dtstart = workingSingle.StartTime;
+    dtstart = dateTo8601(dtstart)
+    
     var dtend = null;
     var summary = null;
     var location = null;
@@ -39,6 +37,19 @@ function parseJSON(arrayOfAllEvents) {
     var returnBeans = buildIcs(uid, dtstamp, dtstart, dtend, summary, location, description);
     
     console.log(returnBeans);
+}
+
+function dateTo8601(dateStr) {
+    
+    try {dateStr = dateStr.toISOString();}catch(e){};
+    dateStr = dateStr.replace(/-/g, "");
+    dateStr = dateStr.replace(/:/g, "");
+    dateStr = dateStr.replace(/Z/g, "");
+    
+    if (dateStr.includes(".")) {
+        dateStr = dateStr.substring(0, dateStr.indexOf("."));
+    }
+    return dateStr;
 }
 
 
