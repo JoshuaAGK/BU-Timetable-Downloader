@@ -20,7 +20,7 @@ function parseJSON(arrayOfAllEvents) {
     // Temporary
     var workingSingle = arrayOfAllEvents[5]
     
-    var uid = null;
+    var uid = uniqueStr();
     
     var dtstamp = new Date(Date.now());
     dtstamp = dtstamp.toISOString();
