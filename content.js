@@ -69,28 +69,33 @@ function downloadTimetableFunc() {
     var endRange = dateRange[1];
     var eventsInRange = [];
     
-    for (var i = 0; i < arrayoflectures.length; i++) {
-        var exampleLecture = arrayoflectures[i];
+    if (isNaN(startRange) || isNaN(endRange)) {
+        var legacyEvent = legacyScrapeEvent();
+        eventsInRange.push(legacyEvent);
+    } else {
+        for (var i = 0; i < arrayoflectures.length; i++) {
+            var exampleLecture = arrayoflectures[i];
 
-        // Convert ics formatted string to JSON
-        exampleLecture = exampleLecture.split("\n");
-        var tempObject = {};
-        for (var j = 0; j < exampleLecture.length; j++) {
-            var splitString = exampleLecture[j].split(":");
-            if (splitString[0].includes("DTEND")) {
-                splitString[0] = "DTEND";
-            } else if (splitString[0].includes("DTSTART")) {
-                splitString[0] = "DTSTART";
+            // Convert ics formatted string to JSON
+            exampleLecture = exampleLecture.split("\n");
+            var tempObject = {};
+            for (var j = 0; j < exampleLecture.length; j++) {
+                var splitString = exampleLecture[j].split(":");
+                if (splitString[0].includes("DTEND")) {
+                    splitString[0] = "DTEND";
+                } else if (splitString[0].includes("DTSTART")) {
+                    splitString[0] = "DTSTART";
+                }
+                tempObject[splitString[0]] = splitString[1];
             }
-            tempObject[splitString[0]] = splitString[1];
-        }
 
-        var isoString = tempObject.DTSTART;
+            var isoString = tempObject.DTSTART;
 
-        var epochStamp = Date.parse(isoString.substring(0, 4) + "-" + isoString.substring(4, 6) + "-" + isoString.substring(6, 11) + ":" + isoString.substring(11, 13) + ":" + isoString.substring(13, 15));
+            var epochStamp = Date.parse(isoString.substring(0, 4) + "-" + isoString.substring(4, 6) + "-" + isoString.substring(6, 11) + ":" + isoString.substring(11, 13) + ":" + isoString.substring(13, 15));
 
-        if (epochStamp >= startRange && epochStamp <= endRange) {
-            eventsInRange.push(arrayoflectures[i])
+            if (epochStamp >= startRange && epochStamp <= endRange) {
+                eventsInRange.push(arrayoflectures[i])
+            }
         }
     }
     
@@ -142,39 +147,53 @@ function getDownloadRange() {
     startDate.year = parseInt(year);
     endDate.year = parseInt(year);    
     
-    if (rangeTxt.split(' ').length == 1) { // True if month view
-        startDate.month = monthIndex(rangeTxt);
-        endDate.month = monthIndex(rangeTxt);
-        startDate.day = 1;
-        endDate.day = daysInMonth(endDate.month, parseInt(endDate.year))
+    
+    var singleEvent = document.getElementById("eventModal");
         
-    } else if (rangeTxt.includes("-")) { // True if week view
-        var startList = rangeTxt.split(" - ")[0].split(" ");
-        var endList = rangeTxt.split(" - ")[1].split(" ");
         
-        endDate.month = monthIndex(endList[1]);
-        endDate.day = parseInt(endList[0]);
+    if (singleEvent.style.display == "block") { // True if single view
+        startDate.year = 0;
+        startDate.year = 0;
+        startDate.day = 0;
+        endDate.day = 0;
+        startDate.month = 0;
+        endDate.month = 0;
+    } else { 
+        if (rangeTxt.split(' ').length == 1) { // True if month view
+            startDate.month = monthIndex(rangeTxt);
+            endDate.month = monthIndex(rangeTxt);
+            startDate.day = 1;
+            endDate.day = daysInMonth(endDate.month, parseInt(endDate.year))
 
-        if (startList.length == 3) {
-            startDate.year = parseInt(startList[2]);
+        } else if (rangeTxt.includes("-")) { // True if week view
+            var startList = rangeTxt.split(" - ")[0].split(" ");
+            var endList = rangeTxt.split(" - ")[1].split(" ");
+
+            endDate.month = monthIndex(endList[1]);
+            endDate.day = parseInt(endList[0]);
+
+            if (startList.length == 3) {
+                startDate.year = parseInt(startList[2]);
+            }
+            if (startList.length == 1) {
+                startDate.month = endDate.month;
+            } else {
+                startDate.month = monthIndex(startList[1]);
+            }
+            startDate.day = parseInt(startList[0]);
+
+
+        } else { // True if day view
+            rangeTxt = rangeTxt.split(" ");
+            startDate.day = parseInt(rangeTxt[0]);
+            endDate.day = parseInt(rangeTxt[0]);
+            startDate.month = monthIndex(rangeTxt[1]);
+            endDate.month = monthIndex(rangeTxt[1]);
         }
-        if (startList.length == 1) {
-            startDate.month = endDate.month;
-        } else {
-            startDate.month = monthIndex(startList[1]);
-        }
-        startDate.day = parseInt(startList[0]);
-        
-        
-        
-        
-    } else { // True if day view
-        rangeTxt = rangeTxt.split(" ");
-        startDate.day = parseInt(rangeTxt[0]);
-        endDate.day = parseInt(rangeTxt[0]);
-        startDate.month = monthIndex(rangeTxt[1]);
-        endDate.month = monthIndex(rangeTxt[1]);
     }
+    
+    
+        
     
     
     
@@ -195,7 +214,7 @@ function getDownloadRange() {
     
     var startEpoch = Date.parse(startDate.year + "-" + startDate.month + "-" + startDate.day + "T00:00:01");
     var endEpoch = Date.parse(endDate.year + "-" + endDate.month + "-" + endDate.day + "T23:59:59");
-    
+        
     return [startEpoch, endEpoch];
 }
 
@@ -222,7 +241,7 @@ function parseJSON(arrayOfAllEvents) {
         var dtstamp = dateTo8601(new Date(Date.now()));
         
         var dtstart = dateTo8601(workingSingle.StartTime);
-
+        
         var dtend = dateTo8601(workingSingle.EndTime);
 
         var summary = workingSingle.ModuleName;
@@ -306,9 +325,7 @@ function titleTrim(title) {
             title += " lecture theatre";
         }
     }
-    
-    
-    
+        
     return title;
 }
 
@@ -452,6 +469,13 @@ function titleCase(inputString) {
     return (endText);
 }
 
+function htmlDecode(input) {
+    var e = document.createElement('div');
+    e.innerHTML = input;
+    return e.childNodes[0].nodeValue;
+}
+
+
 // Legacy download method
 
 // Listen for keypress
@@ -466,10 +490,94 @@ function logKey(e) {
 
 function legacyDownload() {
     var classList = document.getElementById("listViewBtn").className.split(' ');
-    if (classList.length >= 6) {
-        // Process raw innerHTML for list view
+    var singleEvent = document.getElementById("eventModal");
+    
+    if (classList.length >= 6 || singleEvent.style.display == "block") {
         downloadTimetableFunc();
-    } else {
-        
     }
+}
+
+function legacyScrapeEvent() {
+    var year = document.getElementById("headerTitle").innerHTML.substring(document.getElementById("headerTitle").innerHTML.length - 4);
+    var dateEle = document.getElementById("eventDate").innerHTML.split(" ");
+    var month = String(monthIndex(dateEle[0]));
+    if (month.length == 1) {
+        month = "0" + month;
+    }
+    var day = dateEle[1];
+    if (day.length == 1) {
+        day = "0" + day;
+    }
+    var downloadDate = year + month + day + "T";
+    
+    var downloadTime = document.getElementById("eventTime").innerHTML.split(" - ");
+    var startTime = downloadTime[0].split(" ");
+    if (startTime[0].length == 4) {
+        startTime[0] = "0" + startTime[0];
+    }
+    if (startTime[1].includes("pm")) {
+        var dayTime = startTime[0].split(":");
+        dayTime = parseInt(dayTime[0]);
+        dayTime += 12;
+        dayTime = dayTime + startTime[0].split(":")[1];
+        startTime = dayTime;
+    } else {
+        startTime = startTime[0];
+        startTime = startTime.replace(/:/g, "");
+    }
+    startTime += "00";
+    
+    
+    var endTime = downloadTime[1].split(" ");
+    if (endTime[0].length == 4) {
+        endTime[0] = "0" + endTime[0];
+    }
+    if (endTime[1].includes("pm")) {
+        var dayTime = endTime[0].split(":");
+        dayTime = parseInt(dayTime[0]);
+        dayTime += 12;
+        dayTime = dayTime + endTime[0].split(":")[1];
+        endTime = dayTime;
+    } else {
+        endTime = endTime[0];
+        endTime = endTime.replace(/:/g, "");
+    }
+    endTime += "00";
+    
+    var uid = uniqueStr();
+    var dtstamp = dateTo8601(new Date(Date.now()));
+    var dtstart = downloadDate + startTime;
+    var dtend = downloadDate + endTime;
+    
+    var summary = document.getElementById("eventName").innerHTML;
+    summary = htmlDecode(summary);
+    summary = titleTrim(summary);
+    summary = titleCase(summary);
+    
+    var location = "";
+    if (document.getElementById("eventName").innerHTML.includes("(Online)")) {
+        location = "Online";
+    } else {
+        location = document.getElementById("eventRooms").innerHTML;
+        location = titleTrim(location);
+        location = titleCase(location);
+    }
+    
+    var description = document.getElementById("eventLecturers").innerHTML;
+    description = description.split(", ");
+    for (var i = 0; i < description.length; i++) {
+        description[i] = nameFormat(description[i]);
+    }
+    var lecturerList = description;
+    if (lecturerList.length == 1) {
+        description = "Lecturer:";
+        description += "\\" + "n" + lecturerList[0];
+    } else {
+        description = "Lecturers:";
+        for (var k = 0; k < lecturerList.length; k++) {
+            description += "\\" + "n" + lecturerList[k];
+        }
+    }
+    
+    return buildEvent(uid, dtstamp, dtstart, dtend, summary, location, description);
 }
