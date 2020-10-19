@@ -1,6 +1,6 @@
 // Load script from injector.js
 var script = document.createElement('script');
-script.src = chrome.extension.getURL('injector.js');
+script.src = chrome.extension.getURL('content.js');
 script.onload = function() {
     this.remove();
 };
