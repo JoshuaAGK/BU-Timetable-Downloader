@@ -1,7 +1,7 @@
 var xhr = XMLHttpRequest.prototype;
 var send = xhr.send;
-
 var isStudent = true;
+var arrayoflectures = [];
 
 // Making changes to XMLHttpRequest send function
 xhr.send = function(postData) {
@@ -20,7 +20,6 @@ xhr.send = function(postData) {
 
 function addDownloadBtnToDOM() {
     var toolbar = document.getElementsByClassName("toolbar")[0];
-    console.log(toolbar);
     var downloadContainer = document.createElement("div");
     downloadContainer.setAttribute("class", "dropdown")
     downloadContainer.setAttribute("id", "timetableDownload")
@@ -41,7 +40,6 @@ function addDownloadBtnToDOM() {
     downloadContainer.appendChild(tooltip)
     
     var downloadBtn = document.createElement("a");
-    downloadBtn.setAttribute("href", "#");
     downloadBtn.setAttribute("role", "button");
     downloadBtn.setAttribute("style", "height: 30px; width: 30px; background-color: #4e546f; cursor: pointer; margin-top: 10px; margin-bottom: 10px; display: block;");
     downloadBtn.setAttribute("onmouseover", "mouseOver()");
@@ -66,55 +64,206 @@ function mouseOut() {
 
 
 function downloadTimetableFunc() {
-    console.log("Beans");
+    var dateRange = getDownloadRange();
+    var startRange = dateRange[0];
+    var endRange = dateRange[1];
+    var eventsInRange = [];
+    
+    for (var i = 0; i < arrayoflectures.length; i++) {
+        var exampleLecture = arrayoflectures[i];
+
+        // Convert ics formatted string to JSON
+        exampleLecture = exampleLecture.split("\n");
+        var tempObject = {};
+        for (var j = 0; j < exampleLecture.length; j++) {
+            var splitString = exampleLecture[j].split(":");
+            if (splitString[0].includes("DTEND")) {
+                splitString[0] = "DTEND";
+            } else if (splitString[0].includes("DTSTART")) {
+                splitString[0] = "DTSTART";
+            }
+            tempObject[splitString[0]] = splitString[1];
+        }
+
+        var isoString = tempObject.DTSTART;
+
+        var epochStamp = Date.parse(isoString.substring(0, 4) + "-" + isoString.substring(4, 6) + "-" + isoString.substring(6, 11) + ":" + isoString.substring(11, 13) + ":" + isoString.substring(13, 15));
+
+        if (epochStamp >= startRange && epochStamp <= endRange) {
+            eventsInRange.push(arrayoflectures[i])
+        }
+    }
+    
+    var icsString = `BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Joshua Kelley//Bournemouth University Timetable Downloader//EN`;
+    for (var k = 0; k < eventsInRange.length; k++) {
+        icsString += `
+` + eventsInRange[k];
+    }
+    icsString += `
+END:VCALENDAR`;
+    
+    console.log(icsString);
+    
+    download('event.ics', icsString)
+}
+
+function download(name, writeData) {
+    // Create a link (a) element to process the download through
+    var element = document.createElement('a');
+    // Make it invisible
+    element.style.display = 'none';
+    // Link it to the file
+    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(writeData));
+    element.setAttribute('download', name);
+    // Add it to the DOM
+    document.body.appendChild(element);
+    // Simulate clicking the link to begin the download.
+    element.click();
+    // Remove it from the DOM
+    document.body.removeChild(element);
+}
+
+function getDownloadRange() {
+    var rangeTxt = document.getElementById("headerTitle").innerHTML;
+    var startDate = {
+        "day": 0,
+        "month": 0,
+        "year": 0
+    }
+    var endDate = {
+        "day": 0,
+        "month": 0,
+        "year": 0
+    }
+    
+    var year = rangeTxt.substring(rangeTxt.length - 4);
+    rangeTxt = rangeTxt.substring(0, rangeTxt.length - 5);
+    
+    startDate.year = parseInt(year);
+    endDate.year = parseInt(year);    
+    
+    if (rangeTxt.split(' ').length == 1) { // True if month view
+        startDate.month = monthIndex(rangeTxt);
+        endDate.month = monthIndex(rangeTxt);
+        startDate.day = 1;
+        endDate.day = daysInMonth(endDate.month, parseInt(endDate.year))
+        
+    } else if (rangeTxt.includes("-")) { // True if week view
+        var startList = rangeTxt.split(" - ")[0].split(" ");
+        var endList = rangeTxt.split(" - ")[1].split(" ");
+        
+        endDate.month = monthIndex(endList[1]);
+        endDate.day = parseInt(endList[0]);
+
+        if (startList.length == 3) {
+            startDate.year = parseInt(startList[2]);
+        }
+        if (startList.length == 1) {
+            startDate.month = endDate.month;
+        } else {
+            startDate.month = monthIndex(startList[1]);
+        }
+        startDate.day = parseInt(startList[0]);
+        
+        
+        
+        
+    } else { // True if day view
+        rangeTxt = rangeTxt.split(" ");
+        startDate.day = parseInt(rangeTxt[0]);
+        endDate.day = parseInt(rangeTxt[0]);
+        startDate.month = monthIndex(rangeTxt[1]);
+        endDate.month = monthIndex(rangeTxt[1]);
+    }
+    
+    
+    
+    for (var i = 0; i < Object.keys(startDate).length; i++) {
+        var key = Object.keys(startDate)[i]
+        startDate[key] = String(startDate[key]);
+        if (startDate[key].length == 1) {
+            startDate[key] = "0" + startDate[key];
+        } 
+    }
+    for (var i = 0; i < Object.keys(endDate).length; i++) {
+        var key = Object.keys(endDate)[i]
+        endDate[key] = String(endDate[key]);
+        if (endDate[key].length == 1) {
+            endDate[key] = "0" + endDate[key];
+        } 
+    }
+    
+    var startEpoch = Date.parse(startDate.year + "-" + startDate.month + "-" + startDate.day + "T00:00:01");
+    var endEpoch = Date.parse(endDate.year + "-" + endDate.month + "-" + endDate.day + "T23:59:59");
+    
+    return [startEpoch, endEpoch];
+}
+
+function monthIndex(monthString) {
+    var dat = new Date('1 ' + monthString + ' 1970');
+    return dat.getMonth() + 1;
+}
+
+function daysInMonth(month, year) {
+    return new Date(year, month, 0).getDate();
 }
 
 function parseJSON(arrayOfAllEvents) {   
     addDownloadBtnToDOM();
     
-    // Temporary
-    var workingSingle = arrayOfAllEvents[5]
+    for (var i = 0; i < arrayOfAllEvents.length; i++) {
+        var workingSingle = arrayOfAllEvents[i]
+        
     
-    var uid = uniqueStr();
     
-    var dtstamp = dateTo8601(new Date(Date.now()));
-    
-    var dtstart = dateTo8601(workingSingle.StartTime);
-    
-    var dtend = dateTo8601(workingSingle.EndTime);
-    
-    var summary = workingSingle.ModuleName;
-    summary = titleTrim(summary);
-    summary = titleCase(summary);
-    
-    var location = "";
-    if (workingSingle.EventType == "Online") {
-        location = "Online";
-    } else {
-        location = workingSingle.RoomsAsString;
-        location = titleTrim(location);
-        location = titleCase(location);
-    }
-    
-    var description = workingSingle.Lecturers;
-    var lecturerList = [];
-    for (var i = 0; i < Object.keys(description).length; i++) {
-        var key = Object.keys(description)[i]
-        lecturerList.push(nameFormat(description[key]));
-    }
-    if (lecturerList.length == 1) {
-        description = "Lecturer:";
-        description += "\\" + "n" + lecturerList[0];
-    } else {
-        description = "Lecturers:";
-        for (var i = 0; i < lecturerList.length; i++) {
-            description += "\\" + "n" + lecturerList[i];
-        }
-    }
-    
-    var returnBeans = buildEvent(uid, dtstamp, dtstart, dtend, summary, location, description);
+        var uid = uniqueStr();
+        
+        
+        var dtstamp = dateTo8601(new Date(Date.now()));
+        
+        var dtstart = dateTo8601(workingSingle.StartTime);
 
-    console.log(returnBeans);
+        var dtend = dateTo8601(workingSingle.EndTime);
+
+        var summary = workingSingle.ModuleName;
+        summary = titleTrim(summary);
+        summary = titleCase(summary);
+        
+        var location = "";
+        if (workingSingle.EventType == "Online") {
+            location = "Online";
+        } else {
+            location = workingSingle.RoomsAsString;
+            location = titleTrim(location);
+            location = titleCase(location);
+        }
+        
+        
+
+        var description = workingSingle.Lecturers;
+        
+        var lecturerList = [];
+        for (var j = 0; j < Object.keys(description).length; j++) {
+            var key = Object.keys(description)[j]
+            lecturerList.push(nameFormat(description[key]));
+        }
+        
+        if (lecturerList.length == 1) {
+            description = "Lecturer:";
+            description += "\\" + "n" + lecturerList[0];
+        } else {
+            description = "Lecturers:";
+            for (var k = 0; k < lecturerList.length; k++) {
+                description += "\\" + "n" + lecturerList[k];
+            }
+        }
+        
+
+        var returnBeans = buildEvent(uid, dtstamp, dtstart, dtend, summary, location, description);
+        arrayoflectures.push(returnBeans);
+    }
 }
 
 function nameFormat(name) {
@@ -140,11 +289,13 @@ function titleTrim(title) {
     title = title.toLowerCase();
     
     if (title.includes(", ")) {
-        title = title.split(", ");
         
-        for (var i = title.length - 1; i > 0; i--) {
-            if (title[i] == title[0]) {
-                title = title.pop();
+        var splitString = String(title);
+        splitString = splitString.split(", ");
+        
+        for (var i = splitString.length - 1; i > 0; i--) {
+            if (splitString[i] == splitString[0]) {
+                splitString = splitString.pop();
             }
         }
     }
