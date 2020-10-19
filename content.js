@@ -104,8 +104,6 @@ PRODID:-//Joshua Kelley//Bournemouth University Timetable Downloader//EN`;
     icsString += `
 END:VCALENDAR`;
     
-    console.log(icsString);
-    
     download('event.ics', icsString)
 }
 
@@ -452,4 +450,26 @@ function titleCase(inputString) {
         }
     }
     return (endText);
+}
+
+// Legacy download method
+
+// Listen for keypress
+document.addEventListener('keydown', logKey);
+// Run code on keypress
+function logKey(e) {
+    // Check if "S" key pressed (S = 83 in ASCII)
+    if (e.keyCode == 83) {
+        legacyDownload();
+    }
+}
+
+function legacyDownload() {
+    var classList = document.getElementById("listViewBtn").className.split(' ');
+    if (classList.length >= 6) {
+        // Process raw innerHTML for list view
+        downloadTimetableFunc();
+    } else {
+        
+    }
 }
