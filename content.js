@@ -230,10 +230,13 @@ function daysInMonth(month, year) {
 function parseJSON(arrayOfAllEvents) {   
     addDownloadBtnToDOM();
     
+    var labelItm = document.querySelectorAll(".hd-aside")[0].getElementsByTagName("h1")[0].innerHTML;
+    if (labelItm.toLowerCase().includes("student") == false) {
+        isStudent = false;
+    }
+    
     for (var i = 0; i < arrayOfAllEvents.length; i++) {
         var workingSingle = arrayOfAllEvents[i]
-        
-    
     
         var uid = uniqueStr();
         
