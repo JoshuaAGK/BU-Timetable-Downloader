@@ -7,16 +7,16 @@
     "content_scripts": [{
         "matches": ["https://timetable.bournemouth.ac.uk/*"],
         "run_at": "document_start",
-        "js": ["content.js", "injector.js"]
+        "js": ["injector.js", "content.js"]
     }],
     "background": {
         "scripts": [
-            "content.js"
+            "injector.js"
         ],
         "persistent": true
     },
     
-    "web_accessible_resources": ["injector.js", "images/BC128White.png"],
+    "web_accessible_resources": ["content.js", "images/BC128White.png"],
     "permissions": [
         "webRequest",
         "activeTab",
