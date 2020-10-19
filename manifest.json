@@ -18,12 +18,7 @@
     
     "web_accessible_resources": ["content.js", "images/BC128White.png"],
     "permissions": [
-        "webRequest",
-        "activeTab",
-        "storage",
-        "https://*/*",
-        "http://*/*",
-        "tabs"
+        "activeTab"
     ],
     "icons": {
         "16": "images/BC16.png",
